@@ -1,38 +1,126 @@
+/* src/App.css */
 .App {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.form-container {
+  margin: 50px auto;
+  max-width: 400px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+input,
+select,
+button {
+  display: block;
+  margin: 10px auto;
+  width: 100%;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Add this CSS to your stylesheets */
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody + tbody {
+  border-top: 2px solid #dee2e6;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.table-bordered {
+  border: 1px solid #dee2e6;
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid #dee2e6;
+}
+
+.table-bordered thead th,
+.table-bordered thead td {
+  border-bottom-width: 2px;
+}
+
+.table-dark {
+  color: #fff;
+  background-color: #343a40;
+}
+
+.table-dark th,
+.table-dark td,
+.table-dark thead th,
+.table-dark tbody+tbody {
+  border-color: #454d55;
+}
+
+.table-dark.table-bordered {
+  border: 0;
+}
+
+.table-dark.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+
+/* Add this CSS to your stylesheets */
+
+.react-tabs__tab-list {
+  list-style-type: none;
+  padding: 10px 0; /* Added padding */
+  margin: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.react-tabs__tab {
+  border: 1px solid #ccc;
+  padding: 10px 15px;
+  margin: 0 5px;
+  cursor: pointer;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.react-tabs__tab--selected {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.react-tabs__tab-panel {
+  padding: 20px; /* Added padding */
+}
+
+.page-container {
+  display: flex;
+  justify-content: center;
+  background-color: #f0f0f0; /* Light gray background for the entire page */
+  padding: 20px 0;
+}
+
+.box-container {
+  width: 70%; /* Maximum width of one-third of the page */
+  background-color: #fff; /* White background for the box */
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1); /* Add shadow effect */
+  border-radius: 5px; /* Rounded corners */
+  overflow: hidden; /* Hide overflowing content */
 }
