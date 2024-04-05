@@ -143,7 +143,7 @@ const Datatable = ({ data, handleProvisioning, selectedTab }) => {
   );
 };
 
-const API_ENDPOINT = 'http://172.23.21.66:8001';
+const API_ENDPOINT = 'http://172.23.21.66:8000';
 
 const Form = () => {
   const [oltData, setOltData] = useState([]);
