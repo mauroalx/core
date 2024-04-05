@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import Swal from 'sweetalert2'
 
 const DatatableSkeleton = () => {
   // Skeleton loading component
@@ -19,10 +20,10 @@ const DatatableSkeleton = () => {
         {/* Create skeleton rows */}
         {[1].map((index) => (
           <tr key={index}>
-            <td>Loading...</td>
-            <td>Loading...</td>
-            <td>Loading...</td>
-            <td>Loading...</td>
+            <td>Carregando lista...</td>
+            <td>Carregando lista...</td>
+            <td>Carregando lista...</td>
+            <td>Carregando lista...</td>
           </tr>
         ))}
       </tbody>
@@ -45,8 +46,70 @@ const Datatable = ({ data, handleProvisioning, selectedTab }) => {
 
 //   console.log()
 
+  const handleSendInput = async (e, host) => {
+    const value = e.currentTarget.value
+
+    const payload = {
+      'ip_olt': host,
+      'mac_onu': e.currentTarget.value
+    };
+
+    if(e.key == 'Enter'){
+      const { data } = await axios.post(`${API_ENDPOINT}/localizaOnu`, payload);
+
+      if(!data){
+        Swal.fire({
+          position: "top-end",
+          icon: "warning",
+          title: "ONU não localizada",
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }else{
+        const payload = {
+          "ip_olt": host,
+          "mac_onu": data.mac_onu,
+          "slot_pon": data.slot_pon
+        }
+
+        document.querySelector('.desp').disabled = true;
+
+        const response = await axios.post(`${API_ENDPOINT}/desautorizaOnu`, payload);
+
+        document.querySelector('.desp').disabled = false;
+
+        if(!response.data){
+          await Swal.fire({
+            position: "top-end",
+            icon: "warning",
+            title: "Ocorreu um erro ao desprovisionar, tente novamente",
+            showConfirmButton: false,
+            timer: 1500
+          });
+        }else{
+          await Swal.fire({
+            position: "top-end",
+            icon: "success",
+            title: "ONU deletada com sucesso",
+            showConfirmButton: false,
+            timer: 1500
+          });
+
+          document.querySelector('.desp').value = ""
+        }
+
+      }
+
+      console.log(data)
+    }
+
+
+  }
+
+  const [alias, setAlias] = useState('')
 
   return (
+    <>
     <table className="table table-striped table-bordered">
       <thead className="thead-dark">
         <tr>
@@ -65,7 +128,7 @@ const Datatable = ({ data, handleProvisioning, selectedTab }) => {
             <td>
               <button
                 className="btn btn-primary"
-                onClick={() => handleProvisioning(item.MAC, item.SLOT, item.PON, item.TIPO_ONU, hosts[selectedTab])}
+                onClick={() => handleProvisioning(item.MAC, item.SLOT, item.PON, item.TIPO_ONU, hosts[selectedTab], alias)}
               >
                 Provisionar
               </button>
@@ -74,10 +137,13 @@ const Datatable = ({ data, handleProvisioning, selectedTab }) => {
         ))}
       </tbody>
     </table>
+    <input type='search' className="alias" onKeyUp={(e) => setAlias(e.currentTarget.value)} placeholder='Insira o Alias da ONU que deseja provisionar'/>
+    <input type='search' className="desp" onKeyUp={(e) => handleSendInput(e, hosts[selectedTab])} placeholder='Digite o SN da ONU que deseja desprovisionar'/>
+    </>
   );
 };
 
-const API_ENDPOINT = 'http://172.23.21.66:8000';
+const API_ENDPOINT = 'http://172.23.21.66:8001';
 
 const Form = () => {
   const [oltData, setOltData] = useState([]);
@@ -108,35 +174,70 @@ const Form = () => {
   };
 
   const handleTabSelect = (index) => {
-    setSelectedTab(index);
-    console.log(index)
-    const host = document.querySelectorAll('.react-tabs__tab')[index].getAttribute('host');
-    fetchData(host);
+    if (loading){ //if a request is being done already, just force the user wait before
+      Swal.fire({
+        position: "top-end",
+        icon: "warning",
+        title: "Você já solicitou a listagem para uma OLT, aguarde a conclusão",
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }else{
+      setSelectedTab(index);
+      console.log(index)
+      const host = document.querySelectorAll('.react-tabs__tab')[index].getAttribute('host');
+      fetchData(host);
+    }
   };
 
-  const handleProvisioning = async (mac, slot, pon, tipo_onu, host) => {
+  const handleProvisioning = async (mac, slot, pon, tipo_onu, host, alias) => {
     try{
-        const payload = {
-            "ip_olt": host,
-            "slot_pon": `${slot}-${pon}`,
-            "mac_onu": mac,
-            "nome_cliente": "MUDAR DEPOIS",
-            "tipo_onu": tipo_onu,
-            "vlan": "1500"
-        }
+        if(alias == ''){
+          await Swal.fire({
+            position: "top-end",
+            icon: "warning",
+            title: "Preencha o alias para finalizar o provisionamento",
+            showConfirmButton: false,
+            timer: 1500
+          });
 
-        const {data} = await axios.post(`${API_ENDPOINT}/autorizaOnu`, payload);
 
-        if(data[0].msg != "Sucesso"){
-            window.alert("Ocorreu um erro ao provisionar, atualize e tente novamente")
+          let dom = document.querySelector('.alias')
+          dom.focus()
+          dom.style.border = '1px solid red'; // Add red border
+
+          const initialPosition = parseFloat(window.getComputedStyle(dom).marginTop);
+          let count = 0;
+          const interval = setInterval(() => {
+            dom.style.marginTop = (initialPosition + (count % 2 === 0 ? 10 : -10)) + 'px';
+            count++;
+            if (count === 6) {
+              clearInterval(interval);
+              dom.style.marginTop = initialPosition + 'px';
+            }
+          }, 50);
+
         }else{
-            document.querySelectorAll('.react-tabs__tab')[selectedTab].click()
+            const payload = {
+              "ip_olt": host,
+              "slot_pon": `${slot}-${pon}`,
+              "mac_onu": mac,
+              "nome_cliente": alias,
+              "tipo_onu": tipo_onu,
+              "vlan": "1500"
+          }
+
+          const {data} = await axios.post(`${API_ENDPOINT}/autorizaOnu`, payload);
+
+          if(data[0].msg != "Sucesso"){
+              window.alert("Ocorreu um erro ao provisionar, atualize e tente novamente")
+          }else{
+              document.querySelectorAll('.react-tabs__tab')[selectedTab].click()
+          }
         }
     }catch(e){
 
     }
-
-    console.log('Provisioning for ID:', mac, host);
   };
 
   return (

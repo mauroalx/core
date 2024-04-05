@@ -124,3 +124,15 @@ button {
   border-radius: 5px; /* Rounded corners */
   overflow: hidden; /* Hide overflowing content */
 }
+
+
+input{
+  padding: 5px;
+  border-radius: 4px;
+  outline: none;
+  height: 40px;
+  margin-top: 10px;
+  float: left;
+  width: 49%;
+  margin-left: 5px;
+}
